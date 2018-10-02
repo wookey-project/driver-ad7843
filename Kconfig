@@ -1,0 +1,9 @@
+config USR_DRV_TOUCH
+  bool  "userspace AD7843 driver"
+  default y
+  ---help---
+  Support for AD7843 hardware Touch.
+config USR_DRV_TOUCH_CFLAGS
+  string
+  default " -I../../drivers/socs/stm32f439/touch/api " if USR_DRV_TOUCH
+
