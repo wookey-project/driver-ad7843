@@ -1,6 +1,6 @@
 #ifndef GOODUSB_TOUCH_H
 #define GOODUSB_TOUCH_H
-#include "goodusb_spi_arbitrer.h"
+#include "spi_arbitrer.h"
 
 #define GPIO_PA0 0
 #define GPIO_PC0 0
