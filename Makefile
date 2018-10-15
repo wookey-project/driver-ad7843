@@ -19,7 +19,7 @@ CFLAGS += -I$(PROJ_FILES)/include/generated -I$(PROJ_FILES) -I$(PROJ_FILES)/libs
 CFLAGS += -I$(PROJ_FILES)/drivers/socs/stm32f439/tft/api 
 CFLAGS += -I$(PROJ_FILES)/drivers/socs/stm32f439/spi/api
 CFLAGS += -MMD -MP
-CFLAGS += -fno-pie -O0
+CFLAGS += -fno-pie -Os
 
 LDFLAGS += -fno-builtin -nostdlib -nostartfiles
 LD_LIBS +=

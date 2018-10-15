@@ -47,11 +47,12 @@ static void power_up(void)
 void        EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                                  uint32_t status __attribute__ ((unused)),
                                  uint32_t data __attribute__ ((unused)));
+static uint8_t is_touched=0;
 
 uint8_t touch_early_init(void)
 {
     uint8_t     ret = 0;
-
+    is_touched=0;
     //timer2_early_init();        /* Need that to be done before going futher */
 
     /*******************************
@@ -79,8 +80,11 @@ uint8_t touch_early_init(void)
     dev.gpios[0].speed = GPIO_PIN_VERY_HIGH_SPEED;
 
     //Then configure pin PD12 (the EXTI pin)
-    dev.gpios[1].mask =
-        GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
+    dev.gpios[1].mask = GPIO_MASK_SET_PUPD | GPIO_MASK_SET_TYPE | GPIO_MASK_SET_SPEED |
+	    //GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
+	    GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD ;//| GPIO_MASK_SET_EXTI;
+    dev.gpios[1].type = GPIO_PIN_OTYPER_OD;
+    dev.gpios[1].speed = GPIO_PIN_VERY_HIGH_SPEED;
     dev.gpios[1].kref.port = GPIO_PD;
     dev.gpios[1].kref.pin = 12;
     dev.gpios[1].mode = GPIO_PIN_INPUT_MODE;
@@ -147,7 +151,7 @@ int touch_read_X_SER()
     int         tmp = 0;
     int         i;
     for (i = 0; i < 64; i++) {
-        tmp += touch_read_12bits(A0_BIT | SER_BIT);
+	tmp+=touch_read_12bits(A0_BIT|SER_BIT|PD1_BIT);
     }
     return tmp / 64;
 }
@@ -157,7 +161,7 @@ int touch_read_Y_SER()
     int         tmp = 0;
     int         i;
     for (i = 0; i < 64; i++) {
-        tmp += touch_read_12bits(A2_BIT | SER_BIT);
+        tmp += touch_read_12bits(A2_BIT | SER_BIT | PD1_BIT);
     }
     return tmp / 64;
 }
@@ -190,7 +194,8 @@ void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                           uint32_t status __attribute__ ((unused)),
                           uint32_t data __attribute__ ((unused)) )
 {
-return ;
+   is_touched^=1;
+   return ;
 #if 0
     if (!EXTI_enable)
         return;
@@ -286,12 +291,13 @@ int touch_gety()
     return (posy < 3400) ? 240 * (3400 - posy) / 3400 : 0;
 }
 
-#if 0
 int touch_is_touched()
 {
-    return timer_running;
+    uint8_t tmp;
+    sys_cfg(CFG_GPIO_GET, (uint8_t) ((('D'-'A')<<4)+12), &tmp);
+    return !tmp;
+    //return is_touched; //timer_running;
 }
-#endif
 
 void touch_refresh_pos()
 {
