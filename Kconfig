@@ -5,5 +5,5 @@ config USR_DRV_AD7843
   Support for AD7843 hardware Touch.
 config USR_DRV_AD7843_CFLAGS
   string
-  default " -I../../drivers/socs/stm32f439/ad7843/api " if USR_DRV_AD7843
+  default " -I../../drivers/boards/wookey/ad7843/api " if USR_DRV_AD7843
 
