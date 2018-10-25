@@ -47,7 +47,9 @@ static void power_up(void)
 void        EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                                  uint32_t status __attribute__ ((unused)),
                                  uint32_t data __attribute__ ((unused)));
-static uint8_t is_touched=0;
+static volatile uint8_t is_touched=0;
+
+static device_t    dev = { 0 };
 
 uint8_t touch_early_init(void)
 {
@@ -58,7 +60,6 @@ uint8_t touch_early_init(void)
     /*******************************
      * first, SDIO device declaration
      *******************************/
-    device_t    dev = { 0 };
     /*
      * declare the SDIO device, during initialization phase
      * This function create a device_t, fullfill it, and execute a
@@ -82,7 +83,7 @@ uint8_t touch_early_init(void)
     //Then configure pin PD12 (the EXTI pin)
     dev.gpios[1].mask = GPIO_MASK_SET_PUPD | GPIO_MASK_SET_TYPE | GPIO_MASK_SET_SPEED |
 	    //GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
-	    GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD ;//| GPIO_MASK_SET_EXTI;
+	    GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
     dev.gpios[1].type = GPIO_PIN_OTYPER_OD;
     dev.gpios[1].speed = GPIO_PIN_VERY_HIGH_SPEED;
     dev.gpios[1].kref.port = GPIO_PD;
@@ -91,6 +92,7 @@ uint8_t touch_early_init(void)
     dev.gpios[1].pupd = GPIO_NOPULL;
     dev.gpios[1].exti_trigger = GPIO_EXTI_TRIGGER_BOTH;
     dev.gpios[1].exti_handler = EXTI15_10_IRQHandler;
+    dev.gpios[1].exti_lock = GPIO_EXTI_LOCKED;
 
     ret = sys_init(INIT_DEVACCESS, &dev, &devdesc_touch);
 
@@ -195,7 +197,7 @@ void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                           uint32_t data __attribute__ ((unused)) )
 {
    is_touched^=1;
-   return ;
+   return;
 #if 0
     if (!EXTI_enable)
         return;
@@ -289,6 +291,11 @@ int touch_getx()
 int touch_gety()
 {
     return (posy < 3400) ? 240 * (3400 - posy) / 3400 : 0;
+}
+
+void touch_enable_exti()
+{
+    sys_cfg(CFG_GPIO_UNLOCK_EXTI, (uint8_t)dev.gpios[1].kref.val);
 }
 
 int touch_is_touched()
