@@ -49,11 +49,12 @@ void        EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                                  uint32_t data __attribute__ ((unused)));
 static volatile uint8_t is_touched=0;
 
-static device_t    dev = { 0 };
+static device_t    dev;
 
 uint8_t touch_early_init(void)
 {
     uint8_t     ret = 0;
+    memset((void*)&dev, 0, sizeof(device_t));
     is_touched=0;
     //timer2_early_init();        /* Need that to be done before going futher */
 
