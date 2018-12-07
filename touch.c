@@ -110,10 +110,10 @@ uint8_t touch_init(void)
 
     lock_bus(2);
     DOWN_TOUCH_NSS;
-    spi_master_send_byte_sync(1, S_BIT | A2_BIT | A0_BIT);  //VREF_ON
-    spi_master_send_byte_sync(1, A1_BIT);   //Scratch
-    spi_master_send_byte_sync(1, A2_BIT | A1_BIT);  //Scratch
-    spi_master_send_byte_sync(1, A2_BIT | A0_BIT);
+    spi1_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
+    spi1_master_send_byte_sync( A1_BIT);   //Scratch
+    spi1_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
+    spi1_master_send_byte_sync( A2_BIT | A0_BIT);
     UP_TOUCH_NSS;
     unlock_bus();
     return 0;
@@ -130,22 +130,22 @@ int touch_read_12bits(uint8_t command)
     volatile int res;
     uint8_t     tmpres;
     uint32_t    stock;
-    spi_disable(1);
+    spi1_disable();
     stock = read_reg_value(r_CORTEX_M_SPI1_CR1);
     write_reg_value(r_CORTEX_M_SPI1_CR1, (stock & ~(7 << 3)) | (6 << 3));
-    spi_enable(1);
+    spi1_enable();
     /*DOWN the touch CS line */
     DOWN_TOUCH_NSS;
     /* send the command */
-    res = spi_master_send_byte_sync(1, S_BIT | command);    //S_BIT for control
-    tmpres = spi_master_send_byte_sync(1, 0);   //dont care
+    res = spi1_master_send_byte_sync( S_BIT | command);    //S_BIT for control
+    tmpres = spi1_master_send_byte_sync( 0);   //dont care
     res = ((tmpres & 0x7f) << 5);
-    tmpres = spi_master_send_byte_sync(1, 0);   //dont care
+    tmpres = spi1_master_send_byte_sync( 0);   //dont care
     res |= (tmpres >> 3);
     UP_TOUCH_NSS;
-    spi_disable(1);
+    spi1_disable();
     write_reg_value(r_CORTEX_M_SPI1_CR1, stock);
-    spi_enable(1);
+    spi1_enable();
     return res;
 }
 
