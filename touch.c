@@ -1,3 +1,4 @@
+#include "autoconf.h"
 #include "api/types.h"
 #include "kernel/exported/devices.h"
 #include "kernel/exported/dmas.h"
