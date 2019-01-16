@@ -12,11 +12,10 @@ VERSION = 1
 # use an app-specific build dir
 APP_BUILD_DIR = $(BUILD_DIR)/drivers/$(LIB_NAME)
 
-CFLAGS := $(DEBUG_CFLAGS) $(WARN_CFLAGS) $(EMBED_CFLAGS) $(AFLAGS)
 CFLAGS += -ffreestanding
 CFLAGS += $(DRIVERS_CFLAGS)
 CFLAGS += -I$(PROJ_FILES)/include/generated -I$(PROJ_FILES) -I$(PROJ_FILES)/libs/std -I.
-CFLAGS += -I$(PROJ_FILES)/drivers/boards/wookey/ili9341/api 
+CFLAGS += -I$(PROJ_FILES)/drivers/boards/wookey/ili9341/api
 CFLAGS += -I$(PROJ_FILES)/drivers/socs/stm32f439/spi/api
 CFLAGS += -MMD -MP
 CFLAGS += -fno-pie -Os
