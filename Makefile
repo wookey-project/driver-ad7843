@@ -1,4 +1,4 @@
-LIB_NAME ?= libtouch
+LIB_NAME ?= libad7843
 
 PROJ_FILES = ../../../../
 LIB_FULL_NAME = $(LIB_NAME).a
