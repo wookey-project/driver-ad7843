@@ -4,6 +4,7 @@
 #include "libspi.h"
 #include "api/libtouch.h"
 #include "api/print.h"
+#include "api/string.h"
 #include "api/regutils.h"
 #include "api/syscall.h"
 
