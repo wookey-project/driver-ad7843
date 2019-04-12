@@ -8,6 +8,7 @@
 #include "api/string.h"
 #include "api/regutils.h"
 #include "api/syscall.h"
+#include "generated/ad7843.h"
 
 /*
  * This lib requires:
@@ -75,8 +76,8 @@ uint8_t touch_early_init(void)
     dev.gpios[0].mask =
         GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_TYPE |
         GPIO_MASK_SET_SPEED;
-    dev.gpios[0].kref.port = GPIO_PD;
-    dev.gpios[0].kref.pin = 10;
+    dev.gpios[0].kref.port = ad7843_dev_infos.gpios[TOUCH_NSS].port;
+    dev.gpios[0].kref.pin = ad7843_dev_infos.gpios[TOUCH_NSS].pin;
     dev.gpios[0].mode = GPIO_PIN_OUTPUT_MODE;
     dev.gpios[0].pupd = GPIO_PULLUP;
     dev.gpios[0].type = GPIO_PIN_OTYPER_PP;
@@ -88,8 +89,8 @@ uint8_t touch_early_init(void)
 	    GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
     dev.gpios[1].type = GPIO_PIN_OTYPER_OD;
     dev.gpios[1].speed = GPIO_PIN_VERY_HIGH_SPEED;
-    dev.gpios[1].kref.port = GPIO_PD;
-    dev.gpios[1].kref.pin = 12;
+    dev.gpios[1].kref.port = ad7843_dev_infos.gpios[TOUCH_EXTI].port;
+    dev.gpios[1].kref.pin = ad7843_dev_infos.gpios[TOUCH_EXTI].pin;
     dev.gpios[1].mode = GPIO_PIN_INPUT_MODE;
     dev.gpios[1].pupd = GPIO_NOPULL;
     dev.gpios[1].exti_trigger = GPIO_EXTI_TRIGGER_BOTH;
@@ -111,10 +112,19 @@ uint8_t touch_init(void)
 
     lock_bus(2);
     DOWN_TOUCH_NSS;
+#if CONFIG_WOOKEY_V1
     spi1_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
     spi1_master_send_byte_sync( A1_BIT);   //Scratch
     spi1_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
     spi1_master_send_byte_sync( A2_BIT | A0_BIT);
+#elif CONFIG_WOOKEY_V2
+    spi2_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
+    spi2_master_send_byte_sync( A1_BIT);   //Scratch
+    spi2_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
+    spi2_master_send_byte_sync( A2_BIT | A0_BIT);
+#else
+#error "unsupported board"
+#endif
     UP_TOUCH_NSS;
     unlock_bus();
     return 0;
@@ -131,6 +141,9 @@ int touch_read_12bits(uint8_t command)
     volatile int res;
     uint8_t     tmpres;
     uint32_t    stock;
+
+
+#if CONFIG_WOOKEY_V1
     spi1_disable();
     stock = read_reg_value(r_CORTEX_M_SPI1_CR1);
     write_reg_value(r_CORTEX_M_SPI1_CR1, (stock & ~(7 << 3)) | (6 << 3));
@@ -147,6 +160,24 @@ int touch_read_12bits(uint8_t command)
     spi1_disable();
     write_reg_value(r_CORTEX_M_SPI1_CR1, stock);
     spi1_enable();
+#elif CONFIG_WOOKEY_V2
+    spi2_disable();
+    stock = read_reg_value(r_CORTEX_M_SPI2_CR1);
+    write_reg_value(r_CORTEX_M_SPI2_CR1, (stock & ~(7 << 3)) | (6 << 3));
+    spi2_enable();
+    /*DOWN the touch CS line */
+    DOWN_TOUCH_NSS;
+    /* send the command */
+    res = spi2_master_send_byte_sync( S_BIT | command);    //S_BIT for control
+    tmpres = spi2_master_send_byte_sync( 0);   //dont care
+    res = ((tmpres & 0x7f) << 5);
+    tmpres = spi2_master_send_byte_sync( 0);   //dont care
+    res |= (tmpres >> 3);
+    UP_TOUCH_NSS;
+    spi2_disable();
+    write_reg_value(r_CORTEX_M_SPI2_CR1, stock);
+    spi2_enable();
+#endif
     return res;
 }
 
