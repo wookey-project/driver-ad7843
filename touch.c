@@ -231,87 +231,8 @@ void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
 {
    is_touched^=1;
    return;
-#if 0
-    if (!EXTI_enable)
-        return;
-    //set_reg_bits(r_CORTEX_M_NVIC_ICER1,0x80);//Disable interrupt during reading
-    //read_reg_value(r_CORTEX_M_NVIC_ICPR1);
-    /*
-     * BEGIN EWOK EXTI is handled by Ewok and we should only reach here if
-     * it is our interrupt
-     *if(read_reg_value(EXTI_PR)&(1<<12))
-     *
-     {
-     */
-    // set_reg_bits(EXTI_PR,(1<<12));
-    if (timer_running) {
-        clear_wait(2);          //if timer was waiting for the bus
-        // clear its flags
-        timer2_disable();
-        timer_running = 0;
-    } else {
-        timer2_enable();
-        timer_running = 1;
-    }
-
-    /*  } END EWOK */
-//  set_reg_bits(r_CORTEX_M_NVIC_ICPR1,0x80);//
-//  set_reg_bits(EXTI_PR,(1<<12));
-#endif
 }
 
-#if 0
-/* the TIM2_IRQHandler! */
-void TIM2_IRQHandler(uint8_t irq __attribute__((unused)) , // IRQ number
-                     uint32_t sr __attribute__((unused)) ,  // content of posthook.status,
-                     uint32_t dr __attribute__((unused)) )  // content of posthook.data)
-{
-    int         tmpx, tmpy;
-
-    //Reset counter and Clear the pending flags
-    timer2_disable();
-    write_reg_value(r_CORTEX_M_TIM2CNT, read_reg_value(r_CORTEX_M_TIM2ARR));
-    write_reg_value(r_CORTEX_M_TIM2SR, 0);
-
-    //First Mask the EXTI12 interrupt as read posX and posy may
-    //make some noise on the interrupt line
-    //clear_reg_bits(EXTI_IMR,(1<<12));
-    EXTI_enable = 0;
-
-    /* Wait for any already launched SPI transfert to complete */
-    if (try_lock_bus(2))        //Can we get the bus
-        //otherwise just put a flag in the wait queue and wait for reschedule
-    {
-        //make measurement
-        tmpx = touch_read_X_DFR();
-        tmpy = touch_read_Y_DFR();
-
-        posx = tmpx;
-        posy = tmpy;
-        unlock_bus();
-    }
-    //reenable timer and unmask the interrupt
-    timer2_enable();
-    // set_reg_bits(EXTI_IMR,(1<<12));
-    EXTI_enable = 1;
-
-    //Check if the current level of the interrupt pin is up
-    //meaning that the touch has been released while reading
-    //the touch screen
-    {
-        uint8_t     is_released;
-        sys_cfg(CFG_GPIO_GET, (uint8_t) ((('D' - 'A') << 4) + 12),
-                &is_released);
-        if (is_released
-            // (read_reg_value(GPIOD_IDR)&(1<<12))
-            ) {
-            //set_reg_bits(EXTI_SWIER,(1<<12));
-            timer2_disable();
-            timer_running = 0;
-        }
-    }
-}
-#endif
 
 /*
  * WARNING!!!!!! INVERTED X AND Y  SIZE HERE!
