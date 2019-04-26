@@ -140,13 +140,13 @@ int touch_read_12bits(uint8_t command)
 {
     volatile int res;
     uint8_t     tmpres;
-    uint32_t    stock;
+    uint8_t     br = 3;
 
 
 #if CONFIG_WOOKEY_V1
     spi1_disable();
-    stock = read_reg_value(r_CORTEX_M_SPI1_CR1);
-    write_reg_value(r_CORTEX_M_SPI1_CR1, (stock & ~(7 << 3)) | (6 << 3));
+    br = spi1_get_baudrate();
+    spi1_set_baudrate(SPI_BAUDRATE_750KHZ);
     spi1_enable();
     /*DOWN the touch CS line */
     DOWN_TOUCH_NSS;
@@ -158,12 +158,11 @@ int touch_read_12bits(uint8_t command)
     res |= (tmpres >> 3);
     UP_TOUCH_NSS;
     spi1_disable();
-    write_reg_value(r_CORTEX_M_SPI1_CR1, stock);
+    spi1_set_baudrate(br);
     spi1_enable();
 #elif CONFIG_WOOKEY_V2
     spi2_disable();
-    stock = read_reg_value(r_CORTEX_M_SPI2_CR1);
-    write_reg_value(r_CORTEX_M_SPI2_CR1, (stock & ~(7 << 3)) | (6 << 3));
+    spi2_set_baudrate(SPI_BAUDRATE_750KHZ);
     spi2_enable();
     /*DOWN the touch CS line */
     DOWN_TOUCH_NSS;
@@ -175,7 +174,7 @@ int touch_read_12bits(uint8_t command)
     res |= (tmpres >> 3);
     UP_TOUCH_NSS;
     spi2_disable();
-    write_reg_value(r_CORTEX_M_SPI2_CR1, stock);
+    spi2_set_baudrate(br);
     spi2_enable();
 #endif
     return res;
