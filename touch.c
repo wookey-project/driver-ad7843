@@ -70,7 +70,17 @@ uint8_t touch_early_init(void)
      */
     memcpy(dev.name, name, strlen(name));
 
-    dev.gpio_num = 2;
+    dev.gpio_num = 3;
+
+    /* DECLARE Touch NSS GPIO_PD10 */
+    dev.gpios[2].mask =
+        GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_TYPE |
+        GPIO_MASK_SET_SPEED;
+    dev.gpios[2].kref.port = GPIO_PD;
+    dev.gpios[2].kref.pin = 11;
+    dev.gpios[2].pupd = GPIO_NOPULL;
+    dev.gpios[2].mode = GPIO_PIN_INPUT_MODE;
+    dev.gpios[2].speed = GPIO_PIN_VERY_HIGH_SPEED;
 
     /* DECLARE Touch NSS GPIO_PD10 */
     dev.gpios[0].mask =
@@ -168,6 +178,8 @@ int touch_read_12bits(uint8_t command)
     DOWN_TOUCH_NSS;
     /* send the command */
     res = spi2_master_send_byte_sync( S_BIT | command);    //S_BIT for control
+   //ICI attendre que BUSY redescende 
+    while(sys_cfg(CFG_GPIO_GET,(uint8_t)((('D'-'A')<<4) + 11)));
     tmpres = spi2_master_send_byte_sync( 0);   //dont care
     res = ((tmpres & 0x7f) << 5);
     tmpres = spi2_master_send_byte_sync( 0);   //dont care
@@ -262,6 +274,8 @@ int touch_is_touched()
 void touch_refresh_pos()
 {
     lock_bus(2);
+    printf("Positions lue DFR %x %x SER %x %x\n",touch_read_X_DFR(),touch_read_Y_DFR(),
+                                             touch_read_X_SER(),touch_read_Y_SER()); 
     posx = touch_read_X_DFR();
     posy = touch_read_Y_DFR();
     unlock_bus();
