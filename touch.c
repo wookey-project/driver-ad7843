@@ -180,12 +180,6 @@ int touch_read_12bits(uint8_t command)
     /* send the command */
     res = spi2_master_send_byte_sync( S_BIT | command);    //S_BIT for control
    /* Wait Busy Line to got down*/
-    { 
-      uint8_t tmp=1;
-      while(tmp) 
-      sys_cfg(CFG_GPIO_GET,(uint8_t)((ad7843_dev_infos.gpios[TOUCH_BUSY].port<<4)
-              +ad7843_dev_infos.gpios[TOUCH_BUSY].pin), &tmp);
-    }
     tmpres = spi2_master_send_byte_sync( 0);   //dont care
     res = ((tmpres & 0x7f) << 5);
     tmpres = spi2_master_send_byte_sync( 0);   //dont care
