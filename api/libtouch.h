@@ -28,9 +28,9 @@ ndef        BOARD_GOODUSB
 
 #else
 
-#define TOUCH_NSS_BIT (10)
-#define UP_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)((('D'-'A')<<4) + TOUCH_NSS_BIT),1);}
-#define DOWN_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)((('D'-'A')<<4) + TOUCH_NSS_BIT),0);}
+#define TOUCH_NSS_BIT (ad7843_dev_infos.gpios[TOUCH_NSS].pin)
+#define UP_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)(ad7843_dev_infos.gpios[TOUCH_NSS].port + TOUCH_NSS_BIT),1);}
+#define DOWN_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)(ad7843_dev_infos.gpios[TOUCH_NSS].port + TOUCH_NSS_BIT),0);}
 
 #endif
 int         touch_read_12bits(uint8_t command);
