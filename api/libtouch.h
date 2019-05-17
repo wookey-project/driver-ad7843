@@ -1,5 +1,5 @@
-#ifndef GOODUSB_TOUCH_H
-#define GOODUSB_TOUCH_H
+#ifndef LIBTOUCH_H
+#define LIBTOUCH_H
 #include "spi_arbitrer.h"
 
 #define GPIO_PA0 0
@@ -20,19 +20,10 @@
 #define PD1_BIT (1<<1)
 #define PD0_BIT (1)
 
-#if 0
-ndef        BOARD_GOODUSB
-#define TOUCH_NSS_BIT (1<<0)
-#define UP_TOUCH_NSS set_reg_bits(GPIOC_ODR,TOUCH_NSS_BIT);
-#define DOWN_TOUCH_NSS clear_reg_bits(GPIOC_ODR,TOUCH_NSS_BIT);
-
-#else
-
 #define TOUCH_NSS_BIT (ad7843_dev_infos.gpios[TOUCH_NSS].pin)
 #define UP_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)(ad7843_dev_infos.gpios[TOUCH_NSS].port + TOUCH_NSS_BIT),1);}
 #define DOWN_TOUCH_NSS {sys_cfg(CFG_GPIO_SET,(uint8_t)(ad7843_dev_infos.gpios[TOUCH_NSS].port + TOUCH_NSS_BIT),0);}
 
-#endif
 int         touch_read_12bits(uint8_t command);
 int         touch_read_X_SER();
 int         touch_read_Y_SER();
