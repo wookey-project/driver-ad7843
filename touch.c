@@ -122,7 +122,7 @@ uint8_t touch_init(void)
 
     lock_bus(2);
     DOWN_TOUCH_NSS;
-#if CONFIG_WOOKEY_V1
+#if CONFIG_WOOKEY_V1 || CONFIG_WOOKEY_EMMC 
     spi1_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
     spi1_master_send_byte_sync( A1_BIT);   //Scratch
     spi1_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
@@ -153,7 +153,7 @@ int touch_read_12bits(uint8_t command)
     uint8_t     br = 3;
 
 
-#if CONFIG_WOOKEY_V1
+#if CONFIG_WOOKEY_V1 || CONFIG_WOOKEY_EMMC
     spi1_disable();
     br = spi1_get_baudrate();
     spi1_set_baudrate(SPI_BAUDRATE_750KHZ);
@@ -196,51 +196,56 @@ int touch_read_X_SER()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; (i < 64) && (is_touched); i++) {
 	tmp+=touch_read_12bits(A0_BIT|SER_BIT|PD1_BIT);
     }
-    return tmp / 64;
+    return tmp / i;
 }
 
 int touch_read_Y_SER()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; (i < 64) && (is_touched) ; i++) {
         tmp += touch_read_12bits(A2_BIT | SER_BIT | PD1_BIT);
     }
-    return tmp / 64;
+    return tmp / i;
 }
 
 int touch_read_X_DFR()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; (i < 16) && (is_touched); i++) {
+      //printf("read X istouched %d\n",is_touched);
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A0_BIT | PD1_BIT);
     }
-    return tmp / 64 - 200;
+    return tmp / i - 200;
 }
 
 int touch_read_Y_DFR()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; i < 64; i++) {
+    for (i = 0; (i < 16) && (is_touched) ; i++) {
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A2_BIT | A0_BIT | PD1_BIT);
     }
-    return tmp / 64 - 200;
+    return tmp / i - 200;
 }
 
 void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                           uint32_t status __attribute__ ((unused)),
                           uint32_t data __attribute__ ((unused)) )
 {
-   is_touched^=1;
+  uint8_t tmp; 
+    sys_cfg(CFG_GPIO_GET, (uint8_t) ( 
+              (ad7843_dev_infos.gpios[TOUCH_EXTI].port<<4)+
+                ad7843_dev_infos.gpios[TOUCH_EXTI].pin), &tmp);
+   is_touched=!tmp;
    return;
 }
 
