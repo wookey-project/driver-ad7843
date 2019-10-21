@@ -38,4 +38,5 @@ void        touch_refresh_pos();
 uint8_t     touch_early_init();
 uint8_t     touch_init();
 void        touch_enable_exti();
+void        touch_reactivate_PENIRQ();
 #endif

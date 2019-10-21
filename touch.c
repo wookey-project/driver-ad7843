@@ -98,7 +98,7 @@ uint8_t touch_early_init(void)
 	    //GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
 	    GPIO_MASK_SET_MODE | GPIO_MASK_SET_PUPD | GPIO_MASK_SET_EXTI;
     dev.gpios[1].type = GPIO_PIN_OTYPER_OD;
-    dev.gpios[1].speed = GPIO_PIN_VERY_HIGH_SPEED;
+    dev.gpios[1].speed = GPIO_PIN_HIGH_SPEED;
     dev.gpios[1].kref.port = ad7843_dev_infos.gpios[TOUCH_EXTI].port;
     dev.gpios[1].kref.pin = ad7843_dev_infos.gpios[TOUCH_EXTI].pin;
     dev.gpios[1].mode = GPIO_PIN_INPUT_MODE;
@@ -149,7 +149,7 @@ uint8_t touch_init(void)
 int touch_read_12bits(uint8_t command)
 {
     volatile int res;
-    uint8_t     tmpres;
+    volatile uint8_t     tmpres;
     uint8_t     br = 3;
 
 
@@ -237,6 +237,11 @@ int touch_read_Y_DFR()
     return tmp / i - 200;
 }
 
+void touch_reactivate_PENIRQ()
+{
+    touch_read_12bits(S_BIT | A2_BIT | A0_BIT | PD1_BIT);
+}
+
 void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                           uint32_t status __attribute__ ((unused)),
                           uint32_t data __attribute__ ((unused)) )
@@ -270,7 +275,7 @@ void touch_enable_exti()
 
 int touch_is_touched()
 {
-    uint8_t tmp;
+    uint8_t tmp=1;
     sys_cfg(CFG_GPIO_GET, (uint8_t) ( 
               (ad7843_dev_infos.gpios[TOUCH_EXTI].port<<4)+
                 ad7843_dev_infos.gpios[TOUCH_EXTI].pin), &tmp);
