@@ -122,12 +122,12 @@ uint8_t touch_init(void)
 
     lock_bus(2);
     DOWN_TOUCH_NSS;
-#if CONFIG_WOOKEY_V1 || CONFIG_WOOKEY_EMMC 
+#if CONFIG_WOOKEY_V1 || CONFIG_WOOKEY_EMMC
     spi1_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
     spi1_master_send_byte_sync( A1_BIT);   //Scratch
     spi1_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
     spi1_master_send_byte_sync( A2_BIT | A0_BIT);
-#elif CONFIG_WOOKEY_V2
+#elif defined(CONFIG_WOOKEY_V2) || defined(CONFIG_WOOKEY_V3)
     spi2_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
     spi2_master_send_byte_sync( A1_BIT);   //Scratch
     spi2_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
@@ -170,7 +170,7 @@ int touch_read_12bits(uint8_t command)
     spi1_disable();
     spi1_set_baudrate(br);
     spi1_enable();
-#elif CONFIG_WOOKEY_V2
+#elif defined(CONFIG_WOOKEY_V2) || defined(CONFIG_WOOKEY_V3)
     spi2_disable();
     br = spi2_get_baudrate();
     spi2_set_baudrate(SPI_BAUDRATE_750KHZ);
@@ -246,8 +246,8 @@ void EXTI15_10_IRQHandler(uint8_t irq __attribute__ ((unused)),
                           uint32_t status __attribute__ ((unused)),
                           uint32_t data __attribute__ ((unused)) )
 {
-  uint8_t tmp; 
-    sys_cfg(CFG_GPIO_GET, (uint8_t) ( 
+  uint8_t tmp;
+    sys_cfg(CFG_GPIO_GET, (uint8_t) (
               (ad7843_dev_infos.gpios[TOUCH_EXTI].port<<4)+
                 ad7843_dev_infos.gpios[TOUCH_EXTI].pin), &tmp);
    is_touched=!tmp;
@@ -276,7 +276,7 @@ void touch_enable_exti()
 int touch_is_touched()
 {
     uint8_t tmp=1;
-    sys_cfg(CFG_GPIO_GET, (uint8_t) ( 
+    sys_cfg(CFG_GPIO_GET, (uint8_t) (
               (ad7843_dev_infos.gpios[TOUCH_EXTI].port<<4)+
                 ad7843_dev_infos.gpios[TOUCH_EXTI].pin), &tmp);
     return !tmp;
@@ -289,7 +289,7 @@ void touch_refresh_pos()
     printf("Positions lue DFR %x %x \n",touch_read_X_DFR(),touch_read_Y_DFR());
 #endif
   /*printf("Positions lue DFR %x %x SER %x %x\n",touch_read_X_DFR(),touch_read_Y_DFR(),
-                                             touch_read_X_SER(),touch_read_Y_SER()); 
+                                             touch_read_X_SER(),touch_read_Y_SER());
    */
     posx = touch_read_X_DFR();
     posy = touch_read_Y_DFR();
