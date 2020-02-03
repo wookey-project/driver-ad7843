@@ -122,7 +122,7 @@ uint8_t touch_init(void)
 
     lock_bus(2);
     DOWN_TOUCH_NSS;
-#if CONFIG_WOOKEY_V1 || CONFIG_WOOKEY_EMMC
+#if defined (CONFIG_WOOKEY_V1) || defined(CONFIG_WOOKEY_EMMC)
     spi1_master_send_byte_sync(S_BIT | A2_BIT | A0_BIT);  //VREF_ON
     spi1_master_send_byte_sync( A1_BIT);   //Scratch
     spi1_master_send_byte_sync( A2_BIT | A1_BIT);  //Scratch
