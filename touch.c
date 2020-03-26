@@ -198,8 +198,9 @@ int touch_read_X_SER()
     int         i;
     for (i = 0; (i < 64) && (is_touched); i++) {
 	tmp+=touch_read_12bits(A0_BIT|SER_BIT|PD1_BIT);
+        sys_yield();//to let ISR be runned if IRQ state changed
     }
-    return tmp / i;
+    return (i?tmp / i:0);
 }
 
 int touch_read_Y_SER()
@@ -208,8 +209,9 @@ int touch_read_Y_SER()
     int         i;
     for (i = 0; (i < 64) && (is_touched) ; i++) {
         tmp += touch_read_12bits(A2_BIT | SER_BIT | PD1_BIT);
+        sys_yield();//to let ISR be runned if IRQ state changed
     }
-    return tmp / i;
+    return (i?tmp / i:0);
 }
 
 int touch_read_X_DFR()
@@ -221,8 +223,9 @@ int touch_read_X_DFR()
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A0_BIT | PD1_BIT);
+        sys_yield();//to let ISR be runned if IRQ state changed
     }
-    return tmp / i - 200;
+    return (i?tmp / i - 200:0);
 }
 
 int touch_read_Y_DFR()
@@ -233,8 +236,9 @@ int touch_read_Y_DFR()
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A2_BIT | A0_BIT | PD1_BIT);
+        sys_yield();//to let ISR be runned if IRQ state changed
     }
-    return tmp / i - 200;
+    return (i?tmp / i - 200:0);
 }
 
 void touch_reactivate_PENIRQ()
