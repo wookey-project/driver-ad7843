@@ -17,6 +17,7 @@
  * TIMER permission
  */
 static const char name[6] = "touch";
+int touch_is_touched(void);
 
 /* Variables */
 static int  posx, posy;
@@ -196,9 +197,8 @@ int touch_read_X_SER()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; (i < 64) && (is_touched); i++) {
+    for (i = 0; (i < 64) && touch_is_touched(); i++) {
 	tmp+=touch_read_12bits(A0_BIT|SER_BIT|PD1_BIT);
-        sys_yield();//to let ISR be runned if IRQ state changed
     }
     return (i?tmp / i:0);
 }
@@ -207,9 +207,8 @@ int touch_read_Y_SER()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; (i < 64) && (is_touched) ; i++) {
+    for (i = 0; (i < 64) && touch_is_touched() ; i++) {
         tmp += touch_read_12bits(A2_BIT | SER_BIT | PD1_BIT);
-        sys_yield();//to let ISR be runned if IRQ state changed
     }
     return (i?tmp / i:0);
 }
@@ -218,12 +217,12 @@ int touch_read_X_DFR()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; (i < 16) && (is_touched); i++) {
+    for (i = 0; (i < 16) && touch_is_touched(); i++) {
       //printf("read X istouched %d\n",is_touched);
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A0_BIT | PD1_BIT);
-        sys_yield();//to let ISR be runned if IRQ state changed
+       //sys_yield();//to let ISR be runned if IRQ state changed
     }
     return (i?tmp / i - 200:0);
 }
@@ -232,7 +231,7 @@ int touch_read_Y_DFR()
 {
     int         tmp = 0;
     int         i;
-    for (i = 0; (i < 16) && (is_touched) ; i++) {
+    for (i = 0; (i < 16) && touch_is_touched() ; i++) {
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD0_BIT|PD1_BIT);
         //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A2_BIT | A0_BIT | PD1_BIT);
