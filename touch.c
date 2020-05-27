@@ -21,10 +21,7 @@ int touch_is_touched(void);
 
 /* Variables */
 static int  posx, posy;
-//static int  timer_running = -1;
-//static uint8_t EXTI_enable = 1;
 int         devdesc_touch;
-//extern int  devdesc_timer2;
 
 /***********************************************
  * SDIO block startup function
@@ -59,7 +56,6 @@ uint8_t touch_early_init(void)
     uint8_t     ret = 0;
     memset((void*)&dev, 0, sizeof(device_t));
     is_touched=0;
-    //timer2_early_init();        /* Need that to be done before going futher */
 
     /*******************************
      * first, SDIO device declaration
@@ -143,10 +139,6 @@ uint8_t touch_init(void)
 
 /* Miscelleanous function for send commands and receiveing datas */
 
-//Nous on est SPI 4wire
-//J2 J3 J4 J5 short et les autres open
-
-//static
 int touch_read_12bits(uint8_t command)
 {
     volatile int res;
@@ -200,7 +192,7 @@ int touch_read_X_SER()
     for (i = 0; (i < 64) && touch_is_touched(); i++) {
 	tmp+=touch_read_12bits(A0_BIT|SER_BIT|PD1_BIT);
     }
-    return (i?tmp / i:0);
+    return ( i ? (tmp / i) : 0 );
 }
 
 int touch_read_Y_SER()
@@ -210,7 +202,7 @@ int touch_read_Y_SER()
     for (i = 0; (i < 64) && touch_is_touched() ; i++) {
         tmp += touch_read_12bits(A2_BIT | SER_BIT | PD1_BIT);
     }
-    return (i?tmp / i:0);
+    return ( i ? (tmp / i) : 0 );
 }
 
 int touch_read_X_DFR()
@@ -218,12 +210,9 @@ int touch_read_X_DFR()
     int         tmp = 0;
     int         i;
     for (i = 0; (i < 16) && touch_is_touched(); i++) {
-      //printf("read X istouched %d\n",is_touched);
-        //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD0_BIT|PD1_BIT);
-        //tmp+=touch_read_12bits(S_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A0_BIT | PD1_BIT);
     }
-    return (i?tmp / i - 200:0);
+    return ( i ? ((tmp / i) - 200) : 0 );
 }
 
 int touch_read_Y_DFR()
@@ -231,11 +220,9 @@ int touch_read_Y_DFR()
     int         tmp = 0;
     int         i;
     for (i = 0; (i < 16) && touch_is_touched() ; i++) {
-        //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD0_BIT|PD1_BIT);
-        //tmp+=touch_read_12bits(S_BIT|A2_BIT|A0_BIT|PD1_BIT);
         tmp += touch_read_12bits(S_BIT | A2_BIT | A0_BIT | PD1_BIT);
     }
-    return (i?tmp / i - 200:0);
+    return ( i ? ((tmp / i) - 200) : 0 );
 }
 
 void touch_reactivate_PENIRQ()
@@ -281,7 +268,6 @@ int touch_is_touched()
               (ad7843_dev_infos.gpios[TOUCH_EXTI].port<<4)+
                 ad7843_dev_infos.gpios[TOUCH_EXTI].pin), &tmp);
     return !tmp;
-    //return is_touched; //timer_running;
 }
 
 void touch_refresh_pos()
